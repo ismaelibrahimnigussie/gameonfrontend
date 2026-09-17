@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@theme {
+  /* Registering your custom GAMEON logo color variables directly into Tailwind v4 */
+  --color-main: #05070f;
+  --color-surface: #0a0e1a;
+  --color-cyan-brand: #06b6d4;
+  --color-purple-brand: #9333ea;
+  
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+}
+
+:root {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  --focus-ring: 0 0 0 3px rgb(6 182 212 / 0.2);
+}
+
+/* Custom baseline element styles */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-main);
+  color: var(--text-primary);
+  font-family: "Avenir Next", "Segoe UI Variable", "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+::selection {
+  color: #ecfeff;
+  background: rgb(6 182 212 / 0.35);
+}
+
+/* Custom Webkit Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-main);
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-cyan-brand);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Animation utilities for the mobile dropdown menu */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out forwards;
+}
