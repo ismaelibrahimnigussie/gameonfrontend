@@ -12,7 +12,7 @@ import SessionAPI from '../../api/modules/sessions.api';
 import GameZoneAPI from '../../api/modules/gamezones.api';
 import AuthAPI from '../../api/modules/auth';
 import PlayersAPI from '../../api/modules/players.api';
-import client from '../../api/client';
+
 
 // Import Pages & Components
 import Sidebar from './components/Sidebar';
@@ -371,16 +371,12 @@ export default function GameZoneDashboard() {
       : '';
 
   const setupAuth = useCallback(() => {
-    const token = getZoneToken() || 
-                  targetProfile?.token || 
-                  targetProfile?.access_token ||
-                  localStorage.getItem('gamezone_token') ||
-                  sessionStorage.getItem('gamezone_token');
-    if (token) {
-      client.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      return true;
-    }
-    return false;
+    return Boolean(
+      getZoneToken()
+      || targetProfile?.token
+      || targetProfile?.access_token
+      || localStorage.getItem('gamezone_token'),
+    );
   }, [targetProfile, getZoneToken]);
 
   // Computed Metrics

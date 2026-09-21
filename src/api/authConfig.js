@@ -1,32 +1,35 @@
-// src/api/authConfig.js
-
 export const STORAGE_KEYS = {
   USER: {
     TOKEN: 'user_token',
     ROLE: 'user_role',
-    PROFILE: 'user_profile'
+    PROFILE: 'user_profile',
   },
   ADMIN: {
     TOKEN: 'admin_token',
     ROLE: 'admin_role',
-    PROFILE: 'admin_profile'
+    PROFILE: 'admin_profile',
   },
   GAME_ZONE: {
     TOKEN: 'gamezone_token',
     ROLE: 'gamezone_role',
-    PROFILE: 'gamezone_profile'
+    PROFILE: 'gamezone_profile',
   },
-  // 🚀 To add a new role in the future, just add its keys here:
-  // NEW_ROLE: {
-  //   TOKEN: 'new_role_token',
-  //   ROLE: 'new_role_role',
-  //   PROFILE: 'new_role_profile'
-  // }
 };
 
 export const LEGACY_KEYS = {
-  GAME_ZONE_TOKEN: 'gamezone_token',
   ZONE_TOKEN: 'zoneToken',
   GAME_ZONE_DATA: 'gamezone_data',
-  ACTIVE_ZONE: 'activeZone'
+  ACTIVE_ZONE: 'activeZone',
+};
+
+export const AUTH_ROLES = {
+  ADMIN: 'admin',
+  GAMEZONE: 'gamezone',
+  USER: 'user',
+};
+
+export const AUTH_EXPIRED_EVENT = {
+  admin: 'admin-auth-expired',
+  gamezone: 'gamezone-auth-expired',
+  user: 'user-auth-expired',
 };

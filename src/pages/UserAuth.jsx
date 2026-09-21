@@ -108,9 +108,7 @@ const UserAuth = ({ onAuthSuccess, onNavigateBack }) => {
           });
           
           if (loginResult.success) {
-            if (onAuthSuccess) {
-              await onAuthSuccess(loginResult.data);
-            }
+            onAuthSuccess?.();
           } else {
             setError('Account created but auto-login failed. Please login manually.');
           }
@@ -130,9 +128,7 @@ const UserAuth = ({ onAuthSuccess, onNavigateBack }) => {
         
         if (result.success) {
           setSuccess('Login successful! Redirecting...');
-          if (onAuthSuccess) {
-            await onAuthSuccess(result.data);
-          }
+          onAuthSuccess?.();
         } else {
           setError(result.message || 'Login failed. Please check your credentials.');
         }

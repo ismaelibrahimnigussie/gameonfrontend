@@ -1,16 +1,14 @@
 {
-  "name": "frontend",
+  "name": "gameon-frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "GameOn web client: player, game-zone, and admin portals",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
-
-  
-
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
