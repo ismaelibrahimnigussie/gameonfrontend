@@ -1,146 +1,73 @@
-// src/api/modules/credits.api.js
-import client from "../client";
+import client from '../client';
 
 class CreditAPI {
-  /**
-   * Get credit balance for a specific zone
-   * Matches: GET /credits/zone/:zoneId/balance
-   */
-  static async getZoneBalance(zoneId) {
-    try {
-      const data = await client.get(`/credits/zone/${zoneId}/balance`);
-      return data;
-    } catch (error) {
-      throw error;
-    }
+  static getZoneBalance(zoneId) {
+    return client.get(`/credits/zone/${zoneId}/balance`);
   }
 
-  /**
-   * Get credit history / transactions for a zone
-   * (You can expand this later)
-   */
-  static async getZoneCredits(zoneId) {
-    try {
-      const data = await client.get(`/credits/zone/${zoneId}`);
-      return data;
-    } catch (error) {
-      throw error;
-    }
+  static getZoneCredits(zoneId) {
+    return client.get(`/credits/zone/${zoneId}`);
   }
 
-  /**
-   * Get all credit packages (for top-up options)
-   */
-  static async getCreditPackages() {
-    try {
-      const data = await client.get('/credits/packages');
-      return data;
-    } catch (error) {
-      throw error;
-    }
+  static getCreditPackages() {
+    return client.get('/credits/packages');
   }
 
-  // ==================== ADMIN / FUTURE METHODS ====================
-
-  /**
-   * Add credits to a zone (Admin only)
-   */
-  static async addCredits(zoneId, creditId, amount) {
-    try {
-      const data = await client.post('/credits/zone/grant', {
-        zoneId,
-        creditId,
-        amount,
-        transaction_type: creditId ? 'Purchase' : 'Manual'
-      });
-      return data;
-    } catch (error) {
-      throw error;
-    }
+  static addCredits(zoneId, creditId, amount) {
+    return client.post('/credits/zone/grant', {
+      zoneId,
+      creditId,
+      amount,
+      transaction_type: creditId ? 'Purchase' : 'Manual',
+    });
   }
 
-  /**
-   * Deduct credits from a zone (Admin / System use)
-   */
-  static async deductCredits(zoneId, amount) {
-    try {
-      const data = await client.post('/credits/zone/deduct', {
-        zoneId,
-        amount
-      });
-      return data;
-    } catch (error) {
-      throw error;
-    }
+  static deductCredits(zoneId, amount) {
+    return client.post('/credits/zone/deduct', { zoneId, amount });
   }
 
-  static async getZoneCreditsAdmin(zoneId) {
-    try {
-      const data = await client.get(`/credits/admin/zone/${zoneId}`);
-      return data;
-    } catch (error) {
-      throw error;
-    }
+  static getZoneCreditsAdmin(zoneId) {
+    return client.get(`/credits/admin/zone/${zoneId}`);
   }
 
-  static async getZoneBalanceAdmin(zoneId) {
-    try {
-      const data = await client.get(`/credits/admin/zone/${zoneId}/balance`);
-      return data;
-    } catch (error) {
-      throw error;
-    }
+  static getZoneBalanceAdmin(zoneId) {
+    return client.get(`/credits/admin/zone/${zoneId}/balance`);
   }
 
-  static async grantCredits(payload) {
-    try {
-      const data = await client.post('/credits/zone/grant', payload);
-      return data;
-    } catch (error) {
-      throw error;
-    }
+  static grantCredits(payload) {
+    return client.post('/credits/zone/grant', payload);
   }
 
-  static async createPackage(payload) {
-    try {
-      const data = await client.post('/credits/packages', payload);
-      return data;
-    } catch (error) {
-      throw error;
-    }
+  static createPackage(payload) {
+    return client.post('/credits/packages', payload);
   }
 
-  static async updatePackage(id, payload) {
-    try {
-      const data = await client.put(`/credits/packages/${id}`, payload);
-      return data;
-    } catch (error) {
-      throw error;
-    }
+  static updatePackage(id, payload) {
+    return client.put(`/credits/packages/${id}`, payload);
   }
 
-  static async deletePackage(id) {
-    try {
-      const data = await client.delete(`/credits/packages/${id}`);
-      return data;
-    } catch (error) {
-      throw error;
-    }
+  static deletePackage(id) {
+    return client.delete(`/credits/packages/${id}`);
   }
 
-  static async getSystemCosts() { return client.get('/system-costs'); }
-  static async createSystemCost(payload) { return client.post('/system-costs', payload); }
-  static async updateSystemCost(id, payload) { return client.put(`/system-costs/${id}`, payload); }
-  static async deleteSystemCost(id) { return client.delete(`/system-costs/${id}`); }
+  static getSystemCosts() {
+    return client.get('/system-costs');
+  }
 
-  // Optional: Get current authenticated zone's balance (if you implement /credits/balance later)
-  static async getMyBalance() {
-    try {
-      const data = await client.get('/credits/zone/me/balance'); // or adjust route
-      return data;
-    } catch (error) {
-      throw error;
-    }
+  static createSystemCost(payload) {
+    return client.post('/system-costs', payload);
+  }
+
+  static updateSystemCost(id, payload) {
+    return client.put(`/system-costs/${id}`, payload);
+  }
+
+  static deleteSystemCost(id) {
+    return client.delete(`/system-costs/${id}`);
+  }
+
+  static getMyBalance() {
+    return client.get('/credits/zone/me/balance');
   }
 }
 

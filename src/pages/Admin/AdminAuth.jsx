@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Loader2, Shield } from 'lucide-react';
 import { useAdminAuth } from '../../context/AdminAuthContext';
-import { ADMIN_DASHBOARD_PATH, ADMIN_PORTAL_PATH } from '../../config/routes';
+import { ADMIN_DASHBOARD_PATH } from '../../config/routes';
 
 const initialLogin = { phone: '', password: '' };
 
@@ -80,9 +80,7 @@ export default function AdminAuth() {
           </button>
         </form>
 
-        <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-4 text-[11px] text-slate-500">
-          Route: <span className="text-[#00F0FF]">{ADMIN_PORTAL_PATH}</span>
-        </div>
+
       </div>
     </div>
   );

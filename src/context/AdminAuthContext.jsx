@@ -1,97 +1,62 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import client from '../api/client';
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useCallback } from 'react';
 import AuthAPI from '../api/modules/auth';
+import { AUTH_ROLES } from '../api/authConfig';
+import { getApiErrorMessage, sanitizePhone } from '../lib/http';
+import usePersistedAuth from '../hooks/usePersistedAuth';
 
 const AdminAuthContext = createContext(null);
 
 export const AdminAuthProvider = ({ children }) => {
-  const [adminUser, setAdminUser] = useState(null);
-  const [isAdminLoading, setIsAdminLoading] = useState(true);
+  const {
+    profile: adminUser,
+    setProfile: setAdminUser,
+    isLoading: isAdminLoading,
+    setIsLoading: setIsAdminLoading,
+    logout: clearSession,
+    isAuthenticated: isAdminAuthenticated,
+  } = usePersistedAuth(AUTH_ROLES.ADMIN);
 
-  // Restore Admin Session
-  useEffect(() => {
-    const restoreAdminSession = () => {
-      try {
-        const activeRole = AuthAPI.getActiveStakeholder?.();
-        if (activeRole === 'admin') {
-          const profile = AuthAPI.admin?.getProfile?.();
-          const token = AuthAPI.admin?.getToken?.();
-
-          if (token && profile) {
-            setAdminUser(profile);
-            client.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-          } else {
-            AuthAPI.admin?.logout?.();
-            delete client.defaults.headers.common['Authorization'];
-          }
-        }
-      } catch (err) {
-      } finally {
-        setIsAdminLoading(false);
-      }
-    };
-
-    restoreAdminSession();
-  }, []);
-
-  useEffect(() => {
-    const handleExpired = () => {
-      setAdminUser(null);
-      delete client.defaults.headers.common['Authorization'];
-    };
-    window.addEventListener('admin-auth-expired', handleExpired);
-    return () => window.removeEventListener('admin-auth-expired', handleExpired);
-  }, []);
-
-  // Admin Login
   const adminLogin = async (rawCredentials) => {
     setIsAdminLoading(true);
-    const phoneVal = (rawCredentials.phone || rawCredentials.phoneNumber || '').toString().trim().replace(/\s+/g, '');
-    const credentials = { ...rawCredentials, phone: phoneVal, phoneNumber: phoneVal };
+    const phone = sanitizePhone(rawCredentials.phone || rawCredentials.phoneNumber);
+    const credentials = { ...rawCredentials, phone, phoneNumber: phone };
 
     try {
       const result = await AuthAPI.admin.login(credentials);
-      const storedProfile = AuthAPI.admin?.getProfile?.();
-      let profile = storedProfile || result?.user || result?.data?.user || result?.profile || result?.data?.profile || null;
-      const token = AuthAPI.admin?.getToken?.() || result?.token || result?.data?.token;
-
-      if (!profile && result?.data && !Array.isArray(result.data)) {
-        profile = result.data;
-      }
+      const profile = AuthAPI.admin.getProfile()
+        || result?.data
+        || result?.user
+        || result?.profile
+        || null;
+      const token = AuthAPI.admin.getToken() || result?.token;
 
       if (token && profile) {
-        const normalizedRole = profile.role || 'Admin';
         setAdminUser(profile);
-        localStorage.setItem('admin_role', normalizedRole);
-        client.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         return { success: true, data: profile };
       }
 
       return {
         success: false,
-        message: result?.message || result?.data?.message || 'Admin authentication failed.',
+        message: result?.message || 'Admin authentication failed.',
       };
     } catch (error) {
-      const serverMessage =
-        error.response?.data?.message ||
-        (error.response?.status === 401 ? 'Invalid admin credentials.' : null) ||
-        'Admin login failed.';
-      return { success: false, message: serverMessage };
+      return {
+        success: false,
+        message: getApiErrorMessage(
+          error,
+          error.response?.status === 401 ? 'Invalid admin credentials.' : 'Admin login failed.',
+        ),
+      };
     } finally {
       setIsAdminLoading(false);
     }
   };
 
-  // Admin Logout
   const adminLogout = useCallback(() => {
-    if (typeof AuthAPI.admin?.logout === 'function') {
-      AuthAPI.admin.logout();
-    } else {
-      AuthAPI.logoutAll?.();
-    }
-    setAdminUser(null);
-    delete client.defaults.headers.common['Authorization'];
-  }, []);
+    AuthAPI.admin.logout();
+    clearSession();
+  }, [clearSession]);
 
   const isSuperAdmin = Boolean(adminUser?.role === 'Super Admin' || adminUser?.is_super === true);
 
@@ -100,13 +65,13 @@ export const AdminAuthProvider = ({ children }) => {
       value={{
         adminUser,
         isAdminLoading,
-        isAdminAuthenticated: !!adminUser,
+        isAdminAuthenticated,
         isSuperAdmin,
         adminLogin,
         adminLogout,
       }}
     >
-      {!isAdminLoading && children}
+      {children}
     </AdminAuthContext.Provider>
   );
 };

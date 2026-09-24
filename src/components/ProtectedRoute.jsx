@@ -1,11 +1,24 @@
-// components/ProtectedRoute.jsx
 import { Navigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 
-const ProtectedRoute = ({ 
-  isAuthenticated, 
+export function AuthBootScreen() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-[#020208] text-slate-400">
+      <Loader2 size={22} className="animate-spin" />
+    </div>
+  );
+}
+
+const ProtectedRoute = ({
+  isAuthenticated,
+  isLoading = false,
   redirectPath = '/',
-  children 
+  children,
 }) => {
+  if (isLoading) {
+    return <AuthBootScreen />;
+  }
+
   if (!isAuthenticated) {
     return <Navigate to={redirectPath} replace />;
   }

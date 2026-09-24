@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -8,8 +8,8 @@ import {
   ArrowRight, Loader2, Sparkles, AlertCircle, ArrowLeft,
   Eye, EyeOff, CheckCircle
 } from 'lucide-react';
-import AuthAPI from '../api/modules/auth';
 import { useGameZoneAuth } from '../context/GameZoneAuthContext';
+import { GAMEZONE_DASHBOARD_PATH } from '../config/routes';
 
 // ==========================================
 // FORM VALIDATION CONFIGURATIONS
@@ -58,11 +58,10 @@ function BrandLogoIcon() {
 // COMPONENT CORE LAYER
 // ==========================================
 export default function GameZoneAuth({ onNavigateBack, onAuthSuccess }) {
-  const { 
-    zoneLogin, 
-    zoneRegister, 
+  const {
+    zoneLogin,
+    zoneRegister,
     isZoneLoading,
-    isZoneAuthenticated 
   } = useGameZoneAuth();
   
   const navigate = useNavigate();
@@ -127,14 +126,12 @@ export default function GameZoneAuth({ onNavigateBack, onAuthSuccess }) {
         });
 
         if (result.success) {
-          setApiSuccess('✅ Authentication successful! Redirecting to dashboard...');
-          
-          setTimeout(() => {
-            if (typeof onAuthSuccess === 'function') {
-              onAuthSuccess(result.data);
-            }
-            navigate('/GameZoneDashboard');
-          }, 1500);
+          setApiSuccess('Authentication successful! Redirecting to dashboard...');
+          if (typeof onAuthSuccess === 'function') {
+            onAuthSuccess();
+          } else {
+            navigate(GAMEZONE_DASHBOARD_PATH);
+          }
         } else {
           setApiError(result.message || 'Authentication failed. Please check your credentials.');
         }
@@ -150,18 +147,16 @@ export default function GameZoneAuth({ onNavigateBack, onAuthSuccess }) {
         if (result.success) {
           if (result.autoLoginFailed) {
             // Registration succeeded but auto-login failed
-            setApiSuccess('✅ Registration successful! Please sign in manually.');
+            setApiSuccess('Registration successful! Please sign in manually.');
             setAuthMode('signin');
             reset();
           } else {
-            setApiSuccess('✅ Registration successful! Redirecting to dashboard...');
-            
-            setTimeout(() => {
-              if (typeof onAuthSuccess === 'function') {
-                onAuthSuccess(result.data);
-              }
-              navigate('/GameZoneDashboard');
-            }, 1500);
+            setApiSuccess('Registration successful! Redirecting to dashboard...');
+            if (typeof onAuthSuccess === 'function') {
+              onAuthSuccess();
+            } else {
+              navigate(GAMEZONE_DASHBOARD_PATH);
+            }
           }
         } else {
           setApiError(result.message || 'Registration failed. Please try again.');

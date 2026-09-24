@@ -1,16 +1,88 @@
-# React + Vite
+# GameOn Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React SPA for GameOn: three portals on one codebase.
 
-Currently, two official plugins are available:
+| Portal | Who it is for | Entry |
+|---|---|---|
+| Player | Gamers who scan a station QR and join a session | `/auth/user` |
+| Game zone | Venue operators who run stations, games, and plays | `/GameZoneAuth` |
+| Admin | Operations staff who verify zones, grant credits, and manage accounts | hidden ops path in `src/config/routes.js` |
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+The UI talks to a separate GameOn API. This repo is the client only.
 
-## React Compiler
+## Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19 + Vite 8
+- React Router 7
+- Tailwind CSS 4
+- Axios
+- React Hook Form + Zod (game-zone auth)
+- Lucide icons
 
-## Expanding the ESLint configuration
+## Quick start
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+cp .env.example .env
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173).
+
+The API defaults to `http://localhost:3000/api` if `VITE_API_BASE_URL` is unset.
+
+## Scripts
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Vite dev server with HMR |
+| `npm run build` | Production bundle in `dist/` |
+| `npm run preview` | Serve the production bundle locally |
+| `npm run lint` | ESLint over the repo |
+
+## Environment
+
+Copy `.env.example` to `.env`. Vite only exposes variables prefixed with `VITE_`.
+
+| Variable | Required | Default | Purpose |
+|---|---|---|---|
+| `VITE_API_BASE_URL` | no | `http://localhost:3000/api` | Backend origin, including `/api` |
+
+Never commit `.env` files. `.gitignore` already ignores them.
+
+## App map
+
+```
+src/
+  api/            Axios client, session storage, REST modules
+  config/         Route constants — use these, do not hardcode paths
+  context/        Role-specific auth providers (admin, game zone, user)
+  hooks/          Shared hooks (session restore + 401)
+  lib/            HTTP helpers (unwrap lists, error messages, phone)
+  pages/Admin/    Operations dashboard (split into dashboard/*)
+  pages/Gamezone/ Venue console
+  pages/User/     Player portal
+```
+
+Auth tokens live in `localStorage` and are attached **per request** by `src/api/client.js`. Do not set `axios.defaults.headers.common.Authorization`.
+
+## Docs
+
+| File | Audience |
+|---|---|
+| [AGENTS.md](./AGENTS.md) | AI agents and new contributors working in this repo |
+| [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) | How the three portals, auth, and API client fit together |
+| [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) | Build, hosting, SPA fallback, env |
+| [SECURITY.md](./SECURITY.md) | Tokens, admin path, secrets |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | Local workflow and PR expectations |
+| [AUDIT.md](./AUDIT.md) | Latest code audit and remaining debt |
+
+## Production notes
+
+- This is a static SPA. The host must rewrite unknown paths to `index.html`.
+- Admin access is JWT-protected. The ops URL is obscure, not a security boundary.
+- `npm run build` is the release artifact. Preview it with `npm run preview` before deploy.
+
+## License
+
+Private. All rights reserved unless a license file is added.

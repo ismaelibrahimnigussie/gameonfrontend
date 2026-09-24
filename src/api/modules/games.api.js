@@ -19,45 +19,27 @@ class GameAPI {
    * Get all games (Public)
    */
   static async getAllGames() {
-    try {
-      const response = await client.get("/games");
-      return {
-        ...response,
-        data: normalizeGameList(response?.data),
-      };
-    } catch (error) {
-      throw error;
-    }
+    const response = await client.get("/games");
+    return {
+      ...response,
+      data: normalizeGameList(response?.data),
+    };
   }
 
-  /**
-   * Get game by ID (Public)
-   */
   static async getGameById(id) {
-    try {
-      const response = await client.get(`/games/${id}`);
-      return {
-        ...response,
-        data: normalizeGame(response?.data),
-      };
-    } catch (error) {
-      throw error;
-    }
+    const response = await client.get(`/games/${id}`);
+    return {
+      ...response,
+      data: normalizeGame(response?.data),
+    };
   }
 
-  /**
-   * Get games by Zone ID (Public)
-   */
   static async getGamesByZone(zoneId) {
-    try {
-      const response = await client.get(`/games/zone/${zoneId}`);
-      return {
-        ...response,
-        data: normalizeGameList(response?.data),
-      };
-    } catch (error) {
-      throw error;
-    }
+    const response = await client.get(`/games/zone/${zoneId}`);
+    return {
+      ...response,
+      data: normalizeGameList(response?.data),
+    };
   }
 
   /**
@@ -136,24 +118,11 @@ class GameAPI {
    * Delete a game (Admin only)
    */
   static async delete(id) {
-    try {
-      const response = await client.delete(`/games/${id}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    return client.delete(`/games/${id}`);
   }
 
-  /**
-   * Get detailed game stats
-   */
   static async getGameDetails(id) {
-    try {
-      const response = await client.get(`/games/${id}/details`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    return client.get(`/games/${id}/details`);
   }
 }
 
