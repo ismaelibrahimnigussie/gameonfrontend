@@ -18,6 +18,39 @@ npm run build
 
 Default API: `http://localhost:3000/api` via `VITE_API_BASE_URL`.
 
+## How the pieces connect
+
+`App.jsx` mounts three auth providers and the routes in `src/config/routes.js`. `ProtectedRoute` checks `isAuthenticated` and `isLoading`. Login pages call the role login, then `onAuthSuccess()` with no credentials.
+
+```
+Home
+  ├─ Player auth (UserAuth + UserAuthForm) → UserPortal → ScannerPanel
+  ├─ Game-zone auth (GameZoneAuth + GameZoneAuthParts) → GameZoneDashboard
+  │     useLoungeDashboard()
+  │       ├─ useLoungeState()     lists, modal, load, derived view
+  │       ├─ catalogActions()     games, stations, rules
+  │       └─ useSessionActions()  create, lifecycle, players, payment
+  │     LoungeTabs renders one screen. DashboardModals reads the same object.
+  └─ Admin auth → AdminPortal
+        useAdminPortal() loads data and modal state
+        adminActions() saves and deletes
+        dashboard/* pages only render
+```
+
+Folder guides list every file in that area. Read the one for the folder you are editing:
+
+| Folder | Guide |
+|---|---|
+| `src/api` | HTTP client, tokens, REST modules |
+| `src/context` | The three auth providers |
+| `src/components` | Home page and route guard |
+| `src/pages/User` | Player portal and QR scanner |
+| `src/pages/Admin` | Admin shell, data, pages, primitives |
+| `src/pages/Gamezone` | Lounge shell and shared chrome |
+| `src/pages/Gamezone/Dashboard` | Tab screens and modals |
+| `src/pages/Gamezone/Dashboard/hooks` | Lounge and session hooks |
+| `src/pages/Gamezone/Dashboard/sessions` | Session list and detail UI |
+
 ## Layout (put new code here)
 
 | Area | Path | Rule |
