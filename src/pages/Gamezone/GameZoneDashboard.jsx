@@ -1,13 +1,19 @@
-import { AlertTriangle, Clock, Coins, RefreshCw, ShieldCheck } from 'lucide-react';
-import Sidebar from './components/Sidebar';
-import FullscreenRefreshOverlay from './components/FullscreenRefreshOverlay';
-import OverviewPage from './Dashboard/Overview';
-import GamesPage from './Dashboard/Games';
-import SessionsPage from './Dashboard/sessions';
-import StationsPage from './Dashboard/Stations';
-import ProfilePage from './Dashboard/Profile';
-import DashboardModals from './Dashboard/modals/DashboardModals';
-import { useLoungeDashboard } from './Dashboard/hooks/useLoungeDashboard';
+import {
+  AlertTriangle,
+  Clock,
+  Coins,
+  RefreshCw,
+  ShieldCheck,
+} from "lucide-react";
+import Sidebar from "./components/Sidebar";
+import FullscreenRefreshOverlay from "./components/FullscreenRefreshOverlay";
+import OverviewPage from "./Dashboard/Overview";
+import GamesPage from "./Dashboard/Games";
+import SessionsPage from "./Dashboard/sessions";
+import StationsPage from "./Dashboard/Stations";
+import ProfilePage from "./Dashboard/Profile";
+import DashboardModals from "./Dashboard/modals/DashboardModals";
+import { useLoungeDashboard } from "./Dashboard/hooks/useLoungeDashboard";
 
 export default function GameZoneDashboard() {
   const d = useLoungeDashboard();
@@ -66,7 +72,10 @@ export default function GameZoneDashboard() {
   if (isZoneLoading || (isZoneAuthenticated && isLoading)) {
     return (
       <div className="min-h-screen bg-[#020208]">
-        <FullscreenRefreshOverlay label="Loading lounge dashboard" sublabel="Pulling your latest stations, sessions, and balance..." />
+        <FullscreenRefreshOverlay
+          label="Loading lounge dashboard"
+          sublabel="Pulling your latest stations, sessions, and balance..."
+        />
       </div>
     );
   }
@@ -78,20 +87,22 @@ export default function GameZoneDashboard() {
           <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-3">
             <AlertTriangle size={24} className="text-amber-400" />
           </div>
-          <h3 className="text-sm font-bold text-white mb-1">Connection Error</h3>
+          <h3 className="text-sm font-bold text-white mb-1">
+            Connection Error
+          </h3>
           <p className="text-xs text-slate-400 mb-5">{loadError}</p>
           <div className="flex gap-2 justify-center">
-            <button 
+            <button
               onClick={() => {
                 initialLoadDoneRef.current = false;
                 loadData();
-              }} 
+              }}
               className="flex-1 py-2.5 bg-[#00F0FF]/10 border border-[#00F0FF]/30 rounded-xl text-[#00F0FF] text-xs font-bold active:scale-95 transition-all flex items-center justify-center gap-1.5"
             >
               <RefreshCw size={14} /> Retry
             </button>
-            <button 
-              onClick={handleLogout} 
+            <button
+              onClick={handleLogout}
               className="flex-1 py-2.5 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-xs font-bold active:scale-95 transition-all"
             >
               Logout
@@ -113,12 +124,18 @@ export default function GameZoneDashboard() {
 
       {/* Toast Notification */}
       {toast && (
-        <div className={`fixed top-4 right-4 left-4 sm:left-auto sm:w-80 z-50 p-3.5 rounded-xl border backdrop-blur-xl shadow-2xl animate-fadeIn ${
-          toast.type === 'success' ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300' :
-          toast.type === 'warning' ? 'bg-amber-500/15 border-amber-500/30 text-amber-300' :
-          'bg-rose-500/15 border-rose-500/30 text-rose-300'
-        }`}>
-          <p className="text-xs font-medium text-center sm:text-left">{toast.message}</p>
+        <div
+          className={`fixed top-4 right-4 left-4 sm:left-auto sm:w-80 z-50 p-3.5 rounded-xl border backdrop-blur-xl shadow-2xl animate-fadeIn ${
+            toast.type === "success"
+              ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
+              : toast.type === "warning"
+                ? "bg-amber-500/15 border-amber-500/30 text-amber-300"
+                : "bg-rose-500/15 border-rose-500/30 text-rose-300"
+          }`}
+        >
+          <p className="text-xs font-medium text-center sm:text-left">
+            {toast.message}
+          </p>
         </div>
       )}
 
@@ -134,7 +151,6 @@ export default function GameZoneDashboard() {
 
       {/* Main Container Area */}
       <main className="flex-1 min-h-screen w-full overflow-x-hidden flex flex-col">
-        
         {/* TOP BRAND HEADER (NO MENU BUTTONS) */}
         <header className="sticky top-0 z-30 bg-[#020208]/80 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 py-3.5 flex items-center justify-between">
           {/* Logo & Lounge Title */}
@@ -147,19 +163,25 @@ export default function GameZoneDashboard() {
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <h1 className="text-sm font-extrabold text-white truncate tracking-wide">
-                  {zoneInfo?.zone_name || targetProfile?.zone_name || 'GameZone'}
+                  {zoneInfo?.zone_name ||
+                    targetProfile?.zone_name ||
+                    "GameZone"}
                 </h1>
-                <span className={`hidden sm:flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full ${
-                  isVerified 
-                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
-                    : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                }`}>
+                <span
+                  className={`hidden sm:flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                    isVerified
+                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                      : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                  }`}
+                >
                   {isVerified ? <ShieldCheck size={10} /> : <Clock size={10} />}
-                  {isVerified ? 'Verified' : 'Pending'}
+                  {isVerified ? "Verified" : "Pending"}
                 </span>
               </div>
               <p className="text-[10px] text-slate-400 truncate">
-                {zoneInfo?.owner_name || targetProfile?.owner_name || 'Lounge Admin'}
+                {zoneInfo?.owner_name ||
+                  targetProfile?.owner_name ||
+                  "Lounge Admin"}
               </p>
             </div>
           </div>
@@ -169,8 +191,12 @@ export default function GameZoneDashboard() {
             <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 flex items-center gap-2">
               <Coins size={14} className="text-amber-400" />
               <div className="text-right">
-                <p className="text-[9px] text-slate-400 uppercase font-mono leading-none">Wallet</p>
-                <p className="text-xs font-bold text-amber-400 font-mono leading-tight">{creditBalance} Br</p>
+                <p className="text-[9px] text-slate-400 uppercase font-mono leading-none">
+                  Wallet
+                </p>
+                <p className="text-xs font-bold text-amber-400 font-mono leading-tight">
+                  {creditBalance} Br
+                </p>
               </div>
             </div>
           </div>
@@ -184,19 +210,22 @@ export default function GameZoneDashboard() {
 
         {!isVerified && (
           <div className="mx-4 sm:mx-6 mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs text-amber-200">
-            Your zone is pending verification. You can browse the dashboard, but create and session actions are disabled until verification is complete.
+            Your zone is pending verification. You can browse the dashboard, but
+            create and session actions are disabled until verification is
+            complete.
           </div>
         )}
 
         {isVerified && Number(creditBalance || 0) <= 0 && (
           <div className="mx-4 sm:mx-6 mt-4 rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-xs text-rose-200">
-            Your zone is verified, but session actions are paused until credits are added.
+            Your zone is verified, but session actions are paused until credits
+            are added.
           </div>
         )}
 
         {/* Content View */}
         <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 pb-28 lg:pb-8 flex-1">
-          {activeTab === 'overview' && (
+          {activeTab === "overview" && (
             <OverviewPage
               zoneInfo={zoneInfo}
               targetProfile={targetProfile}
@@ -206,11 +235,13 @@ export default function GameZoneDashboard() {
               activeStations={activeStations}
               occupiedStations={occupiedStations}
               availabilityRate={availabilityRate}
-              onAddGame={() => openModal('game')}
+              onAddGame={() => openModal("game")}
               onAddStation={() => {
-                if (!canManage) return showToast('Verify lounge first', 'warning');
-                if (!games.length) return showToast('Create a game first', 'warning');
-                openModal('station');
+                if (!canManage)
+                  return showToast("Verify lounge first", "warning");
+                if (!games.length)
+                  return showToast("Create a game first", "warning");
+                openModal("station");
               }}
               isVerified={isVerified}
               canManage={canManage}
@@ -222,12 +253,12 @@ export default function GameZoneDashboard() {
             />
           )}
 
-          {activeTab === 'games' && (
+          {activeTab === "games" && (
             <GamesPage
               games={games}
               stations={stations}
-              onAddGame={() => openModal('game')}
-              onEditGame={(game) => openModal('game', game)}
+              onAddGame={() => openModal("game")}
+              onEditGame={(game) => openModal("game", game)}
               onDeleteGame={handleDeleteGame}
               isLocked={!canManage}
               onRefresh={() => {
@@ -238,12 +269,12 @@ export default function GameZoneDashboard() {
             />
           )}
 
-          {activeTab === 'sessions' && (
+          {activeTab === "sessions" && (
             <SessionsPage
               sessions={sessions}
               focusSessionId={focusSessionId}
               onClearSessionFocus={() => setFocusSessionId(null)}
-              onAddSession={() => openModal('session')}
+              onAddSession={() => openModal("session")}
               onStartSession={handleStartSession}
               onPauseSession={handlePauseSession}
               onResumeSession={handleResumeSession}
@@ -268,33 +299,40 @@ export default function GameZoneDashboard() {
             />
           )}
 
-          {activeTab === 'stations' && (
+          {activeTab === "stations" && (
             <StationsPage
               stations={stations}
               games={games}
               gameDetails={gameDetails}
-                sessions={sessions}
+              sessions={sessions}
               isVerified={isVerified}
               canManageSessions={isVerified}
               canAssignRandomSession={canCreateRandomSession}
               onStartRandomSession={handleStartRandomSessionFromStation}
               onInviteStation={handleInviteFromStation}
-              onManageRule={(station) => openModal('detail', station)}
+              onManageRule={(station) => openModal("detail", station)}
               onEditStation={(station) => {
-                if (!canManage) return showToast('Verify lounge first', 'warning');
+                if (!canManage)
+                  return showToast("Verify lounge first", "warning");
                 setNewStation({
-                  game_id: String(station.gameId ?? station.game_id ?? ''),
-                  station_name: station.station_name || '',
-                  status: station.status || 'Available'
+                  game_id: String(station.gameId ?? station.game_id ?? ""),
+                  station_name: station.station_name || "",
+                  status: station.status || "Available",
                 });
-                openModal('station', station);
+                openModal("station", station);
               }}
               onDeleteStation={handleDeleteStation}
               onAddStation={() => {
-                if (!canManage) return showToast('Verify lounge first', 'warning');
-                if (!games.length) return showToast('Create a game first', 'warning');
-                setNewStation({ game_id: '', station_name: '', status: 'Available' });
-                openModal('station');
+                if (!canManage)
+                  return showToast("Verify lounge first", "warning");
+                if (!games.length)
+                  return showToast("Create a game first", "warning");
+                setNewStation({
+                  game_id: "",
+                  station_name: "",
+                  status: "Available",
+                });
+                openModal("station");
               }}
               onRefresh={() => {
                 initialLoadDoneRef.current = false;
@@ -304,7 +342,7 @@ export default function GameZoneDashboard() {
             />
           )}
 
-          {activeTab === 'profile' && (
+          {activeTab === "profile" && (
             <ProfilePage
               zoneInfo={zoneInfo}
               targetProfile={targetProfile}
@@ -320,7 +358,7 @@ export default function GameZoneDashboard() {
           )}
 
           <footer className="mt-12 text-center text-[10px] text-slate-600 font-mono border-t border-white/5 pt-6">
-            GAMEON LOUNGE CONTROLLER • 2026
+            GAMEON LOUNGE CONTROLLER • 2027
           </footer>
         </div>
       </main>
