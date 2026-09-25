@@ -18,7 +18,9 @@ That is XSS-sensitive. Treat any script injection as a session theft. Do not int
 
 The Axios client attaches the token **per request**. Do not copy tokens into `axios.defaults` or log them.
 
-On HTTP 401 the matching role is cleared and a `*-auth-expired` event is fired. Do not swallow 401s in page-level empty `catch` blocks if the user should be signed out — the interceptor already handles sign-out.
+On HTTP 401 the matching role is cleared and a `*-auth-expired` event is fired. Do not swallow 401s in page-level empty `catch` blocks if the user should be signed out — the interceptor already handles sign-out. `UserPortal` polling still uses empty `catch` blocks; those must not grow to hide a failed sign-out.
+
+A station QR assigns the player currently selected in the portal. Do not send an id that was only captured inside a closed-over loader.
 
 Game-zone login wipes other roles on the same browser. That is intentional.
 
@@ -33,6 +35,8 @@ Do not:
 - Commit a “real” path in chat logs or screenshots of production
 
 Changing the path is a product decision; existing operators bookmark it.
+
+Zone credit revoke still uses `window.prompt` for the amount. That is not an authorization check. Replace it with `ConfirmDialog` or `Modal` before treating the flow as finished.
 
 ## Frontend threat model (short)
 

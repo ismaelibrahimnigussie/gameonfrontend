@@ -29,9 +29,13 @@ Default API: `http://localhost:3000/api` via `VITE_API_BASE_URL`.
 | REST modules | `src/api/modules/*.api.js` | Thin wrappers. Return interceptor payload. No `try/catch { throw error }` |
 | HTTP helpers | `src/lib/http.js` | `unwrapList`, `unwrapData`, `getApiErrorMessage`, `sanitizePhone` |
 | Auth state | `src/context/*AuthContext.jsx` | One provider per role. Use `usePersistedAuth` |
-| Admin UI | `src/pages/Admin/` | Pages in `dashboard/`, primitives in `components/ui.jsx`, chrome in `layout.jsx` |
-| Game zone UI | `src/pages/Gamezone/` | Keep page files; do not grow `GameZoneDashboard.jsx` further |
-| Player UI | `src/pages/User/UserPortal.jsx` | Player QR + station assignment |
+| Admin UI | `src/pages/Admin/` | Pages in `dashboard/`. Primitives stay exported from `components/ui.jsx` (`Select` and dialogs live beside it and are re-exported). |
+| Admin data | `useAdminPortal.js`, `adminActions.js` | Fetch, modal state, and mutations. `AdminPortal.jsx` only lays out pages. |
+| Game zone shell | `GameZoneDashboard.jsx`, `Dashboard/LoungeTabs.jsx` | Auth gates and tab switch. Do not put new screen UI here. |
+| Lounge data | `Dashboard/hooks/useLoungeState.js` | Composes field state, loading, and derived view. Catalog mutations stay in `catalogActions.js`. |
+| Session actions | `Dashboard/hooks/useSessionActions.js` | Composes setup, lifecycle, player, and payment factories. Rules live in `sessionRules.js` and `sessionPaymentRules.js`. |
+| Session UI | `Dashboard/sessions/` | `sessions.jsx` owns list state. Cards, detail, panels, and the round-result dialog are separate components. |
+| Player UI | `src/pages/User/` | `UserPortal.jsx` plus `ScannerPanel.jsx`. A scan assigns the selected player. |
 
 There is **no** unified `AuthContext`. It was removed. Do not bring it back.
 
@@ -93,8 +97,9 @@ Phone values: `sanitizePhone()` before login/register.
 
 - Landing + player + game-zone auth: dark (`#020208`, cyan `#00F0FF`, purple `#7B2CBF`).
 - Admin portal: light slate. Do not mix the leftover dark-theme admin mock into live admin pages.
-- Admin pages are presentational. Data and mutations stay in `AdminPortal.jsx` until a later split.
-- `GameZoneDashboard.jsx` is already too large (~150 KB). New session/station/player UI goes into `pages/Gamezone/Dashboard/*`, not the parent.
+- Admin pages are presentational. New admin fetches and mutations go in `useAdminPortal.js` or `adminActions.js`.
+- New game-zone UI goes in the matching screen folder (`sessions/`, `stations/`, `profile/`, `modals/`). Session calculations go in `sessionRules.js` or `sessionPaymentRules.js`.
+- Keep each module under about 300 lines. Split a screen into components before it grows past that.
 
 ## Adding a feature (checklist)
 
@@ -111,11 +116,20 @@ Phone values: `sanitizePhone()` before login/register.
 - Install new UI libraries without need (`sonner` and `framer-motion` are already unused — do not pile on).
 - Use `window.prompt` / `window.alert` for money or credit actions; use the admin `ConfirmDialog` / `Modal`.
 - Treat the hidden admin path as access control.
-- Refactor `GameZoneDashboard.jsx` and admin data layer in the same PR unless asked.
+- Grow `GameZoneDashboard.jsx`, `AdminPortal.jsx`, or `sessions.jsx` with new screen markup or new mutation logic.
 - Change `ADMIN_PORTAL_PATH` without an explicit product decision (bookmarks depend on it).
 
 ## Known debt
 
-See `AUDIT.md`. Highest leftover: split `GameZoneDashboard.jsx`, shared searchable select, typed API envelopes, remove unused deps.
+See `AUDIT.md`. Still open: one shared searchable select (admin `Select` vs game-zone `SearchableDropdown`), replace `window.prompt` on credit revoke, typed API envelopes, remove unused `sonner` and `framer-motion`.
+
+## Session action rules
+
+- Unverified lounges cannot create, start, end, cancel, or delete sessions.
+- Random-player create also requires credits, a game rule, a free station, and a player who is not already in an unfinished session.
+- Before Game payment needs Cash or Mobile Banking and a positive round price.
+- Add player, leave player, and extra time apply the returned session locally. They do not reload the lounge.
+- Transfer still calls `loadData(true)` so the new waiting session appears.
+- Continue and extra time rethrow after the error toast so the sessions screen can keep its pending state.
 
 When you finish a pass that changes architecture, append to `AUDIT.md` rather than rewriting history.

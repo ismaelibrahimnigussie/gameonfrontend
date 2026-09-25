@@ -101,6 +101,8 @@ HTTP goes through a shared Axios client that attaches a Bearer token from the re
 
 ## Remaining work (not in this pass)
 
+Later sections record what has since landed. Item 1 below is done. Items 2–7 are still open; see the 2026-09-25 hooks section for the current list.
+
 1. Split `GameZoneDashboard.jsx` the same way as admin: move session mutations and modal state into `Dashboard/sessions.jsx` / `stations.jsx`.
 2. Extract the duplicated searchable dropdown (admin `Select` vs game-zone `SearchableDropdown`) into one shared component.
 3. Replace `window.prompt` credit deduction with a modal.
@@ -140,3 +142,54 @@ UI was not exercised in a browser in this session (no running dev server was att
 `Dashboard/sessions.jsx` is still about 1,600 lines. It was already a separate page and was not part of this split.
 
 Checked with `npx eslint` on the new dashboard modules and `npm run build`. The production build succeeds. Full-project `npm run lint` still fails on older files (`sessions.jsx`, `overview.jsx`, `UserAuth.jsx`, `UserPortal.jsx`, `main.jsx`) that this pass did not change. The lounge screens were not clicked through in a browser.
+
+## 2026-09-25 — Page files under 300 lines
+
+Split the oversized lounge and auth screens without changing handlers, class names, or copy. Each touched file is under 300 lines.
+
+- Session list UI is `Dashboard/sessions/SessionBoard.jsx`. `sessions.jsx` still owns state and renders `SessionDetail` or `SessionBoard`.
+- Session detail panels are `Dashboard/sessions/SessionPanels.jsx`.
+- Station card and QR dialog are `Dashboard/stations/StationCard.jsx`.
+- Profile edit form is `Dashboard/profile/ProfileForm.jsx`.
+- Session create player/payment fields are `Dashboard/modals/SessionFormSections.jsx`.
+- Authenticated tab body is `Dashboard/LoungeTabs.jsx`. `GameZoneDashboard.jsx` keeps loading and error states.
+- Game-zone auth chrome is `GameZoneAuthParts.jsx`. Zod schemas are `gameZoneAuthSchemas.js` so the JSX module only exports components.
+
+Checked with `npx eslint` on the touched files. Lounge screens were not clicked through in a browser.
+
+## 2026-09-25 — Hooks, admin data, and the 300-line pass
+
+Every `src/` file that was still over 300 lines was split. `npm run build` succeeds after the split. Source files are under 300 lines. Full-repo `npm run lint` can still fail on older `UserAuth.jsx` (unused initial `errorMessage`) and `UserPortal.jsx` (empty `catch` blocks).
+
+### Where logic lives now
+
+| Area | Current home |
+|---|---|
+| Lounge shell | `GameZoneDashboard.jsx` gates loading. `Dashboard/LoungeTabs.jsx` switches tabs. |
+| Lounge state | `useLoungeState` composes `useLoungeFields`, `useLoungeBindings`, `loungeLoad.js`, `loungeModel.js`, and `loungeView.js`. |
+| Games and stations mutations | `catalogActions.js` |
+| Session mutations | `useSessionActions` composes setup, lifecycle, player, and payment factories plus `sessionActionKit.js`. |
+| Session rules | `sessionRules.js` (create, roster, station occupancy). Payment queue and charges are in `sessionPaymentRules.js` and re-exported. |
+| Session screen | `sessions.jsx` owns filters and selection. `SessionBoard`, `SessionCard`, `SessionDetail`, `SessionPanels`, `RoundResultDialog`, `sessionUi.jsx`, `sessionModel.js`. |
+| Admin | `AdminPortal.jsx` is layout. `useAdminPortal.js` loads and holds modal state. `adminActions.js` saves and deletes. `Select` and dialogs are separate files re-exported from `components/ui.jsx`. |
+| Player | `UserPortal.jsx` and `ScannerPanel.jsx`. A QR assignment uses the selected player id. |
+| Home | `components/home/` for portal cards, preview, and footer. |
+| Game-zone auth | `GameZoneAuth.jsx`, `GameZoneAuthParts.jsx`, `gameZoneAuthSchemas.js`. |
+| Game-zone API | `gamezones.api.js` is still one class and the same URLs. Banner comments were removed. |
+
+### Session behavior this pass kept
+
+- Add player, leave player, and extra time update the returned session and do not call `loadData`.
+- Transfer still calls `loadData(true)`.
+- Continue and extra time still rethrow after their error toast.
+- Create still blocks an occupied station before the request, and still requires verification, credits, a rule, and a free player for a random session.
+
+### Still open
+
+1. Admin `Select` and game-zone `SearchableDropdown` are still two components.
+2. Zone credit revoke in `adminActions.js` still uses `window.prompt`.
+3. API envelopes are still untyped (`data` vs `data.data` vs `data.user`).
+4. `sonner` and `framer-motion` are still unused dependencies.
+5. The hidden admin path is still only obscurity. The admin JWT is the real gate.
+6. The production bundle is still one JS chunk.
+7. Lounge, admin, and player screens were not clicked through in a browser during this pass.

@@ -26,7 +26,7 @@ Read [AGENTS.md](./AGENTS.md) before large edits. It is the working contract for
 - Tailwind utilities; admin is light slate, public/game-zone is dark
 - No new default Axios headers
 - No new auth context
-- No drive-by refactors of `GameZoneDashboard.jsx` unless that is the task
+- Keep a file under about 300 lines. Extend the focused module (`SessionCard`, `adminActions`, `sessionRules`) instead of putting markup or mutations back into `GameZoneDashboard.jsx` or `AdminPortal.jsx`.
 
 ## Commits
 

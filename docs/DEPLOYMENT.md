@@ -66,11 +66,13 @@ location / {
 
 ## Checks before a release
 
-1. `npm run lint`
+1. `npm run lint` (older `UserAuth.jsx` and `UserPortal.jsx` issues can still fail a full-repo run; fix any new findings)
 2. `npm run build`
 3. `npm run preview` against the real or staging API
-4. Smoke: player login, game-zone login, admin login, reload while logged in, 401 logout
+4. Smoke: player login and QR assign, game-zone login, start or pay a session, admin login, reload while logged in, 401 logout
 5. Confirm `VITE_API_BASE_URL` points at the intended environment (no leftover localhost)
+
+The production JS bundle is still one chunk. Route-level code splitting is not in place. A chunk-size warning from Vite does not fail the build.
 
 ## Runtime
 

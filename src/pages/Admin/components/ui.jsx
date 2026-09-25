@@ -1,7 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import {
-  AlertCircle, CheckCircle2, ChevronDown, Info, Loader2, X,
+  AlertCircle, CheckCircle2, Info, Loader2, X,
 } from 'lucide-react';
+
+export { Select } from './Select';
+export { Modal, ConfirmDialog } from './dialogs';
 
 export const Avatar = ({ name, size = 'md' }) => {
   const initials = name?.split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join('') || '?';
@@ -56,106 +59,6 @@ export const Input = ({ label, error, icon: Icon, className = '', ...props }) =>
     {error && <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1"><AlertCircle size={14} />{error}</p>}
   </div>
 );
-
-export const Select = ({ label, options = [], className = '', value = '', onChange, disabled = false, name, id }) => {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState('');
-  const containerRef = useRef(null);
-  const inputRef = useRef(null);
-  const selectedOption = options.find((option) => String(option.value) === String(value));
-  const filteredOptions = options.filter((option) => {
-    const search = query.trim().toLowerCase();
-    if (!search) return true;
-    return `${option.label} ${option.meta || ''}`.toLowerCase().includes(search);
-  });
-
-  useEffect(() => {
-    const handleOutsideClick = (event) => {
-      if (!containerRef.current?.contains(event.target)) {
-        setOpen(false);
-        setQuery('');
-      }
-    };
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
-  }, []);
-
-  const selectOption = (option) => {
-    onChange?.({ target: { name, id, value: option.value } });
-    setOpen(false);
-    setQuery('');
-  };
-
-  return (
-    <div ref={containerRef} className={`relative ${className}`}>
-      {label && <label htmlFor={id || name} className="mb-1.5 block text-sm font-medium text-slate-700">{label}</label>}
-      <div className="relative">
-        <input
-          ref={inputRef}
-          id={id || name}
-          name={name}
-          disabled={disabled}
-          role="combobox"
-          aria-expanded={open}
-          aria-autocomplete="list"
-          autoComplete="off"
-          value={open ? query : selectedOption?.label || ''}
-          placeholder={selectedOption?.label || 'Choose an option...'}
-          onFocus={() => {
-            if (!disabled) setOpen(true);
-          }}
-          onChange={(event) => {
-            setQuery(event.target.value);
-            setOpen(true);
-          }}
-          onKeyDown={(event) => {
-            if (event.key === 'Escape') {
-              setOpen(false);
-              setQuery('');
-            }
-            if (event.key === 'Enter' && filteredOptions[0]) {
-              event.preventDefault();
-              selectOption(filteredOptions[0]);
-            }
-          }}
-          className="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 pr-10 text-base outline-none transition focus:border-slate-400 focus:ring-4 focus:ring-slate-900/5 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
-        />
-        <button
-          type="button"
-          tabIndex={-1}
-          disabled={disabled}
-          aria-label={`${open ? 'Close' : 'Open'} ${label || 'options'}`}
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={() => {
-            setOpen((current) => !current);
-            if (!open) inputRef.current?.focus();
-          }}
-          className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-400 transition hover:text-slate-700 disabled:pointer-events-none"
-        >
-          <ChevronDown size={18} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
-        </button>
-      </div>
-      {open && !disabled && (
-        <div className="absolute z-40 mt-2 max-h-60 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl shadow-slate-900/10" role="listbox">
-          {filteredOptions.length > 0 ? filteredOptions.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              role="option"
-              aria-selected={String(option.value) === String(value)}
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={() => selectOption(option)}
-              className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition ${String(option.value) === String(value) ? 'bg-slate-100 font-semibold text-slate-900' : 'text-slate-700 hover:bg-slate-50'}`}
-            >
-              <span className="min-w-0 truncate">{option.label}</span>
-              {option.meta && <span className="max-w-[40%] shrink-0 truncate text-xs text-slate-400">{option.meta}</span>}
-            </button>
-          )) : <div className="px-3 py-5 text-center text-sm text-slate-400">No matching options</div>}
-        </div>
-      )}
-    </div>
-  );
-};
 
 export const Textarea = ({ label, className = '', ...props }) => (
   <div className={className}>
@@ -230,84 +133,6 @@ export const Toast = ({ message, onDismiss }) => {
         <button onClick={onDismiss} className="p-1 -mr-1 rounded-lg hover:bg-black/5 text-slate-400"><X size={16} /></button>
       </div>
     </div>
-  );
-};
-
-export const Modal = ({ isOpen, onClose, title, subtitle, children, size = 'md', footer, showClose = true }) => {
-  useEffect(() => {
-    if (!isOpen) return undefined;
-    const handleEsc = (event) => {
-      if (event.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', handleEsc);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', handleEsc);
-      document.body.style.overflow = '';
-    };
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
-  const sizeClasses = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
-    full: 'max-w-[95vw] sm:max-w-5xl',
-  };
-
-  return (
-    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose} />
-      <div className={`relative bg-white w-full ${sizeClasses[size]} rounded-t-3xl sm:rounded-2xl shadow-2xl max-h-[90vh] sm:max-h-[85vh] flex flex-col animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-2 duration-300`}>
-        <div className="sm:hidden flex justify-center pt-2 pb-1">
-          <div className="w-10 h-1 rounded-full bg-slate-300" />
-        </div>
-        <div className="flex items-start justify-between px-6 py-4 border-b border-slate-100 flex-shrink-0">
-          <div className="min-w-0 flex-1">
-            <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
-            {subtitle && <p className="text-sm text-slate-500 mt-0.5">{subtitle}</p>}
-          </div>
-          {showClose && (
-            <button onClick={onClose} className="p-2 -mr-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors flex-shrink-0">
-              <X size={20} />
-            </button>
-          )}
-        </div>
-        <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
-        {footer && <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex-shrink-0">{footer}</div>}
-      </div>
-    </div>
-  );
-};
-
-export const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmLabel = 'Confirm', cancelLabel = 'Cancel', variant = 'danger', loading }) => {
-  const iconMap = {
-    danger: { icon: AlertCircle, color: 'text-red-600', bg: 'bg-red-50' },
-    warning: { icon: AlertCircle, color: 'text-amber-600', bg: 'bg-amber-50' },
-    info: { icon: Info, color: 'text-blue-600', bg: 'bg-blue-50' },
-    success: { icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-  };
-  const current = iconMap[variant] || iconMap.info;
-  const Icon = current.icon;
-
-  return (
-    <Modal isOpen={isOpen} onClose={onClose} size="sm" showClose={false}>
-      <div className="flex flex-col items-center text-center py-4">
-        <div className={`h-14 w-14 rounded-2xl ${current.bg} flex items-center justify-center mb-4`}>
-          <Icon size={28} className={current.color} />
-        </div>
-        <h3 className="text-lg font-semibold text-slate-900 mb-2">{title}</h3>
-        <p className="text-sm text-slate-500">{message}</p>
-      </div>
-      <div className="flex gap-2 pt-4">
-        <Button variant="secondary" onClick={onClose} className="flex-1" disabled={loading}>{cancelLabel}</Button>
-        <Button variant={variant === 'success' ? 'success' : variant === 'danger' ? 'danger' : 'primary'} onClick={onConfirm} loading={loading} className="flex-1">
-          {confirmLabel}
-        </Button>
-      </div>
-    </Modal>
   );
 };
 

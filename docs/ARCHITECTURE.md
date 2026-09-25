@@ -54,23 +54,41 @@ Public routes (no token): `/auth/*`, `POST /gamezones`, `/gamezones/login`, `/ga
 
 ### Player (`src/pages/User`)
 
-QR scan → resolve station → request assignment. Uses `PlayersAPI`, `SessionsAPI`, `StationAPI`.
+`UserPortal.jsx` loads the account’s players, sessions, and stats. `ScannerPanel.jsx` reads a station QR. The assignment request uses the selected player’s id (`selectedPlayer` or `selectedPlayerId`). APIs: `PlayersAPI`, `SessionsAPI`, `StationAPI`.
 
 ### Game zone (`src/pages/Gamezone`)
 
-`GameZoneDashboard.jsx` still owns most data loading and session mutations. Child pages under `Dashboard/` render slices (overview, games, sessions, stations, profile). New work should move logic down into those pages, not into the parent.
+`GameZoneDashboard.jsx` is the shell: auth gate, load error, and logout. `Dashboard/LoungeTabs.jsx` switches Overview, Games, Sessions, Stations, and Profile.
+
+Data is composed in `useLoungeDashboard()`:
+
+| Piece | Role |
+|---|---|
+| `useLoungeState` | Field state, lounge load, derived view |
+| `catalogActions` | Create and edit games, stations, and rules |
+| `useSessionActions` | Session setup, lifecycle, players, and payment |
+
+Session UI lives under `Dashboard/sessions/`. `sessions.jsx` owns filters, selection, toasts, and which session is open. `SessionBoard` is the list, `SessionCard` is one row, `SessionDetail` plus `SessionPanels` is the open session, and `sessionModel.js` is time, price, and filtering.
+
+A session mutation that returns the updated play (start, pause, resume, add player, leave, extra time, payment, end, cancel) writes that play into local state. Transfer is the exception: it reloads the lounge so the new waiting session is on screen. The tab refresh button still calls `loadData(true)` and shows the full-dashboard overlay.
+
+Create rules, in order: lounge must be verified; a non-random session opens an invite QR; a random session needs credits, a game rule, no unfinished session for the chosen player, a valid Before Game payment when that timing is selected, and a station that is not already waiting, playing, or paused.
 
 ### Admin (`src/pages/Admin`)
 
-`AdminPortal.jsx` is the orchestrator (fetch, mutations, modal state). Presentational pieces:
+`AdminPortal.jsx` is layout only. `useAdminPortal()` holds fetch, filters, and modal state. `adminActions.js` holds zone, credit, package, player, admin, and system-cost mutations.
 
-- `components/ui.jsx` — Button, Input, Select, Modal, Toast, …
+Presentational pieces:
+
+- `components/ui.jsx` — public primitives. `Select.jsx` and `dialogs.jsx` are re-exported from here.
 - `components/layout.jsx` — sidebar, headers, drawer, mobile nav
 - `components/cards.jsx` — zone/package/credit rows
 - `dashboard/*` — one file per nav page
-- `dashboard/SystemCosts.jsx` — already self-contained
+- `dashboard/SystemCosts.jsx` — cost rules, saved through `adminActions`
 
 Admin visual language is light slate. Ignore any older dark-theme mocks.
+
+Credit revoke still asks for an amount with `window.prompt`. New money actions should use `ConfirmDialog` or `Modal`.
 
 ## Shared helpers
 
@@ -83,4 +101,6 @@ Admin visual language is light slate. Ignore any older dark-theme mocks.
 
 ## State
 
-No global store. Portal state is React context (auth) plus local `useState` in the portal shell. Do not add Redux/Zustand unless a portal’s state graph is split and still too heavy.
+No global store. Portal state is React context (auth) plus the portal hooks above. Do not add Redux/Zustand.
+
+Modules stay under about 300 lines. When a screen or hook crosses that, extract a component or a factory instead of growing the shell.

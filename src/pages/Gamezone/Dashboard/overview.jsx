@@ -1,18 +1,15 @@
-import React from 'react';
 import { MapPin, Phone, Coins, Tv, Gamepad2, RefreshCw } from 'lucide-react';
 
-export default function Overview({ 
-  zoneInfo, 
-  targetProfile, 
-  games = [], 
-  stations = [], 
+export default function Overview({
+  zoneInfo,
+  targetProfile,
+  games = [],
   creditBalance = 0,
   activeStations = 0,
   occupiedStations = 0,
   availabilityRate = 0,
   onAddGame,
   onAddStation,
-  isVerified = false,
   canManage = false,
   onRefresh,
   isRefreshing = false,

@@ -59,12 +59,17 @@ src/
   context/        Role-specific auth providers (admin, game zone, user)
   hooks/          Shared hooks (session restore + 401)
   lib/            HTTP helpers (unwrap lists, error messages, phone)
-  pages/Admin/    Operations dashboard (split into dashboard/*)
-  pages/Gamezone/ Venue console
-  pages/User/     Player portal
+  components/     Public home page, split under components/home/
+  pages/Admin/    Shell in AdminPortal.jsx; data in useAdminPortal.js
+  pages/Gamezone/ Venue shell, tabs, and Dashboard/* screens
+  pages/User/     Player portal and QR scanner panel
 ```
 
+Keep a module under about 300 lines. New UI goes next to the screen it belongs to, not back into a shell.
+
 Auth tokens live in `localStorage` and are attached **per request** by `src/api/client.js`. Do not set `axios.defaults.headers.common.Authorization`.
+
+Game-zone session changes (start, pause, add player, extra time, payment) update that session from the API response. Moving a player to another station still reloads the lounge, because that action creates the next session. Manual refresh on a tab still reloads the whole lounge.
 
 ## Docs
 

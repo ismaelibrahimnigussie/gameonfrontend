@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Scanner } from '@yudiel/react-qr-scanner';
 import { ArrowRight, LogOut, Sparkles, UserRound, History, Loader2 } from 'lucide-react';
 import PlayersAPI from '../../api/modules/players.api';
+import { getApiErrorMessage } from '../../lib/http';
 import SessionsAPI from '../../api/modules/sessions.api';
 import StationAPI from '../../api/modules/stations.api';
+import ScannerPanel from './ScannerPanel';
 
 export default function UserPortal({ authUser, onLogout }) {
   const navigate = useNavigate();
@@ -17,6 +18,8 @@ export default function UserPortal({ authUser, onLogout }) {
   const [playerStats, setPlayerStats] = useState(null);
   const [profileLoading, setProfileLoading] = useState(false);
   const [scanError, setScanError] = useState('');
+  const [loadError, setLoadError] = useState('');
+  const [profileError, setProfileError] = useState('');
   const [cameraOpen, setCameraOpen] = useState(true);
   const [assignmentRequest, setAssignmentRequest] = useState(null);
 
@@ -48,7 +51,9 @@ export default function UserPortal({ authUser, onLogout }) {
         }
         const requestsResponse = await PlayersAPI.getMyStationRequests();
         if (mounted) setAssignmentRequest((requestsResponse?.data ?? requestsResponse ?? []).find((request) => request.status === 'Pending') || null);
+        if (mounted) setLoadError('');
       } catch (error) {
+        if (mounted) setLoadError(getApiErrorMessage(error, 'Could not load your player profile'));
       }
     };
 
@@ -60,7 +65,8 @@ export default function UserPortal({ authUser, onLogout }) {
       try {
         const sessionsRes = await SessionsAPI.getByPlayer(playerId);
         if (mounted) setSessions(sessionsRes?.data ?? sessionsRes ?? []);
-      } catch (error) {
+      } catch {
+        // Keep the sessions already on screen if a background refresh fails.
       }
     };
 
@@ -80,7 +86,7 @@ export default function UserPortal({ authUser, onLogout }) {
 
       const userId = authUser?.userId || authUser?.user_id;
       if (userId && nextStation?.station_id) {
-        const selectedId = selectedPlayer?.player_id || playerId;
+        const selectedId = selectedPlayer?.player_id || selectedPlayerId;
         const requestRes = await PlayersAPI.requestStationAssignment({
           player_id: Number(selectedId),
           station_id: Number(nextStation.station_id)
@@ -104,6 +110,7 @@ export default function UserPortal({ authUser, onLogout }) {
     if (!player?.player_id) return;
     setSelectedPlayerId(String(player.player_id));
     setProfileLoading(true);
+    setProfileError('');
     try {
       const [statsResponse, sessionsResponse] = await Promise.all([
         PlayersAPI.getStats(player.player_id),
@@ -112,6 +119,7 @@ export default function UserPortal({ authUser, onLogout }) {
       setPlayerStats(statsResponse?.data ?? statsResponse ?? null);
       setSessions(sessionsResponse?.data ?? sessionsResponse ?? []);
     } catch (error) {
+      setProfileError(getApiErrorMessage(error, 'Could not load this player'));
     } finally {
       setProfileLoading(false);
     }
@@ -190,8 +198,10 @@ export default function UserPortal({ authUser, onLogout }) {
               })}
             </div>
           ) : (
-            <p className="mt-3 text-xs text-slate-500">No registered player profiles found.</p>
+            <p className="mt-3 text-xs text-slate-500">{loadError || 'No registered player profiles found.'}</p>
           )}
+          {loadError && players.length > 0 && <p className="mt-3 text-xs text-rose-300">{loadError}</p>}
+          {profileError && <p className="mt-3 text-xs text-rose-300">{profileError}</p>}
           {selectedPlayer && (
             <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
               <div className="rounded-xl border border-white/5 bg-black/20 p-3"><div className="text-[10px] text-slate-500">Rounds</div><div className="mt-1 text-lg font-bold text-white">{Number(playerStats?.total_play_amount || 0)}</div></div>
@@ -203,80 +213,20 @@ export default function UserPortal({ authUser, onLogout }) {
         </section>
 
         <div className="grid gap-4 xl:grid-cols-[1fr_0.9fr]">
-          <section className="rounded-3xl border border-white/5 bg-white/[0.03] p-4 backdrop-blur-xl">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Station Access</h2>
-              <button onClick={() => setCameraOpen((v) => !v)} className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-2 text-[11px] font-bold uppercase tracking-widest text-slate-300">
-                {cameraOpen ? 'Use manual QR' : 'Open camera'}
-              </button>
-            </div>
-
-            {cameraOpen ? (
-              <div className="mt-4 overflow-hidden rounded-3xl border border-white/5 bg-[#090914]">
-                <Scanner
-                  onScan={handleScan}
-                  onError={(error) => setScanError(error?.message || 'Scanner unavailable')}
-                  constraints={{ facingMode: 'environment' }}
-                />
-              </div>
-            ) : (
-              <div className="mt-4 rounded-3xl border border-white/5 bg-[#090914] p-4">
-                <label className="text-[10px] uppercase tracking-widest text-slate-500">Paste station QR</label>
-                <div className="mt-2 flex gap-2">
-                  <input
-                    value={qrValue}
-                    onChange={(e) => setQrValue(e.target.value)}
-                    className="min-w-0 flex-1 rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-xs text-white outline-none"
-                    placeholder="STATION-1"
-                  />
-                  <button onClick={() => resolveStation(qrValue)} className="rounded-2xl bg-[#00F0FF] px-4 py-3 text-xs font-black uppercase tracking-widest text-black">
-                    Scan
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {scanError && <div className="mt-4 rounded-2xl border border-rose-500/20 bg-rose-500/5 p-3 text-xs text-rose-300">{scanError}</div>}
-
-            {station && (
-              <div className="mt-4 rounded-3xl border border-white/5 bg-[#090914] p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-[10px] uppercase tracking-widest text-slate-500">Station</div>
-                    <div className="mt-1 text-lg font-bold">{station.station_name}</div>
-                    <div className="mt-1 text-xs text-slate-500">{station.game_name || 'Game not assigned'}</div>
-                  </div>
-                  <span className="rounded-full border border-emerald-500/20 px-2 py-1 text-[9px] font-bold uppercase tracking-widest text-emerald-400">
-                    {station.status || 'active'}
-                  </span>
-                </div>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-white/5 bg-black/20 p-3">
-                    <div className="text-[10px] uppercase tracking-widest text-slate-500">QR</div>
-                    <div className="mt-1 text-xs text-slate-300">{station.qr_code || `STATION-${station.station_id}`}</div>
-                  </div>
-                  <div className="rounded-2xl border border-white/5 bg-black/20 p-3">
-                    <div className="text-[10px] uppercase tracking-widest text-slate-500">Zone</div>
-                    <div className="mt-1 text-xs text-slate-300">{station.zone_name || 'Unknown'}</div>
-                  </div>
-                </div>
-                {readyPlayer && (
-                  <div className="mt-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-3">
-                    <div className="text-[10px] uppercase tracking-widest text-emerald-300">Ready to play</div>
-                    <div className="mt-1 text-sm font-bold text-white">{readyPlayer.nickname || authUser?.username || 'Registered Player'}</div>
-                    <div className="mt-1 text-[11px] text-emerald-200">Player #{readyPlayer.player_id} is assigned to this station.</div>
-                  </div>
-                )}
-                {assignmentRequest && !readyPlayer && (
-                  <div className="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-3">
-                    <div className="text-[10px] uppercase tracking-widest text-amber-300">Assignment request sent</div>
-                    <div className="mt-1 text-sm font-bold text-white">Waiting for game zone approval</div>
-                    <div className="mt-1 text-[11px] text-amber-200">Registered player #{assignmentRequest.player_id} requested this station.</div>
-                  </div>
-                )}
-              </div>
-            )}
-          </section>
+          <ScannerPanel
+            cameraOpen={cameraOpen}
+            setCameraOpen={setCameraOpen}
+            handleScan={handleScan}
+            setScanError={setScanError}
+            qrValue={qrValue}
+            setQrValue={setQrValue}
+            resolveStation={resolveStation}
+            scanError={scanError}
+            station={station}
+            readyPlayer={readyPlayer}
+            assignmentRequest={assignmentRequest}
+            authUser={authUser}
+          />
 
           <section className="rounded-3xl border border-white/5 bg-white/[0.03] p-4 backdrop-blur-xl">
             <div className="flex items-center justify-between gap-3">
