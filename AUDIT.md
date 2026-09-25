@@ -125,3 +125,18 @@ UI was not exercised in a browser in this session (no running dev server was att
 - Admin login → ops dashboard, stations list, credit grant
 - Reload while logged in (no bounce to login)
 - 401 on an authenticated request logs that role out
+
+## 2026-09-24 — Game zone dashboard split
+
+`GameZoneDashboard.jsx` was still a 3,120-line shell (state, mutations, and every modal). This pass split only that file. Existing page components (`sessions.jsx`, `stations.jsx`, `games.jsx`, `overview.jsx`, `profile.jsx`) were left in place.
+
+- Lounge state and loading live in `Dashboard/hooks/useLoungeState.js`.
+- Game, station, and rule mutations live in `Dashboard/hooks/catalogActions.js`.
+- Session mutations live in `Dashboard/hooks/useSessionActions.js`.
+- Modals live in `Dashboard/modals/`.
+- `SearchableDropdown` and `FullscreenRefreshOverlay` live in `pages/Gamezone/components/`.
+- `GameZoneDashboard.jsx` is now the tab shell (about 330 lines).
+
+`Dashboard/sessions.jsx` is still about 1,600 lines. It was already a separate page and was not part of this split.
+
+Checked with `npx eslint` on the new dashboard modules and `npm run build`. The production build succeeds. Full-project `npm run lint` still fails on older files (`sessions.jsx`, `overview.jsx`, `UserAuth.jsx`, `UserPortal.jsx`, `main.jsx`) that this pass did not change. The lounge screens were not clicked through in a browser.
